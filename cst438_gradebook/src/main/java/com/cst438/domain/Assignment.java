@@ -3,6 +3,7 @@ package com.cst438.domain;
 import java.sql.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,12 +23,30 @@ public class Assignment {
 	@JoinColumn(name="course_id")
 	private Course course;
 	
-	@OneToMany(mappedBy="assignment")
+	@OneToMany(mappedBy = "assignment", cascade = CascadeType.REMOVE)
 	private List<AssignmentGrade> assignmentGrades;
 	
 	private String name;
 	private Date dueDate;
 	private int needsGrading;  // 0 = false,  1= true (past due date and not all students have grades)
+	
+	
+	
+	public Assignment() {
+		
+	}
+
+
+	public Assignment(Course course, List<AssignmentGrade> assignmentGrades, String name, Date dueDate,
+			int needsGrading) {
+		super();
+		this.course = course;
+		this.assignmentGrades = assignmentGrades;
+		this.name = name;
+		this.dueDate = dueDate;
+		this.needsGrading = needsGrading;
+	}
+	
 	
 	public int getId() {
 		return id;
@@ -60,6 +79,18 @@ public class Assignment {
 	public void setCourse(Course course) {
 		this.course = course;
 	}
+	
+	
+	public List<AssignmentGrade> getAssignmentGrades() {
+		return assignmentGrades;
+	}
+
+
+	public void setAssignmentGrades(List<AssignmentGrade> assignmentGrades) {
+		this.assignmentGrades = assignmentGrades;
+	}
+
+
 	@Override
 	public String toString() {
 		return "Assignment [id=" + id + ", course_id=" + course.getCourse_id() + ", name=" + name + ", dueDate=" + dueDate
