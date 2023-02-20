@@ -28,7 +28,7 @@ public class AssignmentGrade {
 	public AssignmentGrade(Assignment assignment, Enrollment enrollment) {
 		this.assignment = assignment;
 		this.studentEnrollment = enrollment;
-		this.score = "";
+		this.score = null;
 	}
 
 	public int getId() {

@@ -3,10 +3,14 @@ package com.cst438.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,12 +28,14 @@ import com.cst438.domain.Course;
 import com.cst438.domain.CourseDTOG;
 import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
+import com.cst438.domain.EnrollmentRepository;
 import com.cst438.domain.GradebookDTO;
 import com.cst438.services.RegistrationService;
 
 @RestController
 @CrossOrigin(origins = {"http://localhost:3000","http://localhost:3001"})
 public class GradeBookController {
+	//SessionFactory sessionFactory;
 	
 	@Autowired
 	AssignmentRepository assignmentRepository;
@@ -42,6 +48,9 @@ public class GradeBookController {
 	
 	@Autowired
 	RegistrationService registrationService;
+	
+	@Autowired 
+	EnrollmentRepository enrollmentRepository;
 	
 	// get assignments for an instructor that need grading
 	@GetMapping("/gradebook")
@@ -169,5 +178,82 @@ public class GradeBookController {
 		
 		return assignment;
 	}
+//	@DeleteMapping("/course/{courseId}/assignment/{assignmentId}")
+//    public void deleteAssignment(@PathVariable int courseId, @PathVariable int assignmentId) {
+//        // Get the assignment by ID
+//        Assignment assignment = assignmentRepository.findById(assignmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+//
+//        // Check if there are any grades for the assignment
+//        List<AssignmentGrade> grades = assignmentGradeRepository.findByAssignment(assignment);
+//        if (grades.isEmpty()) {
+//            // If there are no grades, delete the assignment
+//            assignmentRepository.delete(assignment);
+//        } else {
+//            // If there are grades, throw an exception
+//            throw new IllegalStateException("Cannot delete assignment because there are grades for it");
+//        }
+//    }
+	
+//	@PostMapping("/course/{courseId}/assignment")
+//	@Transactional
+//	public Assignment addAssignment(@PathVariable int courseId, @RequestBody Assignment assignment) {
+//	    // Set the course ID for the assignment
+//		Course course = courseRepository.findById(courseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
+//		
+//		
+//		// Set the course for the assignment
+//	    assignment.setCourse(course);
+//
+//	    // Save the new Assignment to the database
+//	    Assignment savedAssignment = assignmentRepository.save(assignment);
+//
+//
+//	    return savedAssignment;
+//	}
+	@PostMapping("/course/{courseId}/assignment")
+	@Transactional
+	public Assignment addAssignment(@PathVariable int courseId, @RequestBody Assignment assignment) {
+	    // Set the course ID for the assignment
+	    Course course = courseRepository.findById(courseId)
+	            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
+	    
+	    // Set the course for the assignment
+	    assignment.setCourse(course);
+	    
+	    // Save the new Assignment to the database
+	    Assignment savedAssignment = assignmentRepository.save(assignment);
+
+	    // Create AssignmentGrade for each Enrollment associated with the Course and Assignment
+	    List<Enrollment> enrollments = enrollmentRepository.findByCourse(course);
+	    for (Enrollment enrollment : enrollments) {
+	        AssignmentGrade assignmentGrade = new AssignmentGrade(savedAssignment, enrollment);
+	        assignmentGradeRepository.save(assignmentGrade);
+	    }
+
+	    return savedAssignment;
+	}
+	
+	@DeleteMapping("/course/{courseId}/assignment/{assignmentId}")
+	public void deleteAssignment(@PathVariable int courseId, @PathVariable int assignmentId) {
+	    // Get the assignment by ID
+	    Assignment assignment = assignmentRepository.findById(assignmentId)
+	        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+
+	    // Check if there are any grades for the assignment
+	    List<AssignmentGrade> grades = assignmentGradeRepository.findByAssignment(assignment);
+	    
+	    // Check if any assignment grade has a non-null score
+	    boolean hasScoredGrades = grades.stream().anyMatch(grade -> grade.getScore() != null);
+	    if (hasScoredGrades) {
+	        throw new IllegalStateException("Cannot delete assignment because there are scored grades for it");
+	    } else {
+	        // If none of the assignment grades have a non-null score, delete the assignment
+	        assignmentRepository.delete(assignment);
+	    }
+	} 
+	
+
+
+
 
 }
