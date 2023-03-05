@@ -343,7 +343,7 @@ public class JunitTestGradebook {
 	    // Make request
 	    String updatedName = "Updated Assignment Name";
 	    assignment.setName(updatedName);
-	    MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.post("/course/" + TEST_COURSE_ID + "/assignment")
+	    MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.put("/course/" + TEST_COURSE_ID + "/assignment/" + assignment.getId())
 	            .content(asJsonString(assignment))
 	            .contentType(MediaType.APPLICATION_JSON))
 	            .andReturn().getResponse();

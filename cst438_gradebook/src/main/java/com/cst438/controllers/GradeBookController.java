@@ -250,7 +250,33 @@ public class GradeBookController {
 	        // If none of the assignment grades have a non-null score, delete the assignment
 	        assignmentRepository.delete(assignment);
 	    }
-	} 
+	}
+	@PutMapping("/course/{courseId}/assignment/{assignmentId}")
+	public Assignment updateAssignmentName(@PathVariable int courseId, @PathVariable int assignmentId, @RequestBody Assignment updatedAssignment) {
+		
+	// Find the existing assignment by ID
+	Assignment existingAssignment = assignmentRepository.findById(assignmentId)
+	.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+	
+	// Update the fields of the existing assignment
+    existingAssignment.setName(updatedAssignment.getName());
+    
+    // changing due date is not within story parameters 
+    //existingAssignment.setDueDate(updatedAssignment.getDueDate());
+
+    // Set the course ID for the assignment
+    Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
+    
+    // Set the course for the assignment
+    existingAssignment.setCourse(course);
+    
+
+    // Save the updated Assignment to the database
+    Assignment savedAssignment = assignmentRepository.save(existingAssignment);
+
+    return savedAssignment;
+} 
 	
 
 
