@@ -1,7 +1,12 @@
 package com.cst438;
 
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -285,6 +290,7 @@ public class JunitTestGradebook {
 	   // assignmentGrade.setEnrollment(enrollment);
 
 	    // Mock repository methods
+	    //given(courseRepository.findById(TEST_COURSE_ID)).willReturn(Optional.empty());
 	    given(courseRepository.findById(TEST_COURSE_ID)).willReturn(Optional.of(course));
 	    given(assignmentRepository.save(any(Assignment.class))).willReturn(assignment);
 	    given(enrollmentRepository.findByCourse(course)).willReturn(Collections.singletonList(enrollment));
@@ -320,6 +326,9 @@ public class JunitTestGradebook {
 	   
 		
 	}
+	// delete this 
+	
+	
 	
 	@Test
 	public void updateAssignmentName() throws Exception {
@@ -338,23 +347,27 @@ public class JunitTestGradebook {
 
 	    given(courseRepository.findById(TEST_COURSE_ID)).willReturn(Optional.of(course));
 	    given(assignmentRepository.findById(1)).willReturn(Optional.of(assignment));
-	    given(assignmentRepository.save(any())).willReturn(assignment);
+	    given(assignmentRepository.save(eq(assignment))).willReturn(assignment);
+	   // given(assignmentRepository.save(any())).willReturn(assignment);
 
 	    // Make request
 	    String updatedName = "Updated Assignment Name";
 	    assignment.setName(updatedName);
+	    
 	    MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.put("/course/" + TEST_COURSE_ID + "/assignment/" + assignment.getId())
 	            .content(asJsonString(assignment))
 	            .contentType(MediaType.APPLICATION_JSON))
 	            .andReturn().getResponse();
 
+	    
 	    // Verify response
 	    assertEquals(HttpStatus.OK.value(), response.getStatus());
 	    Assignment returnedAssignment = fromJsonString(response.getContentAsString(), Assignment.class);
 	    assertEquals(updatedName, returnedAssignment.getName());
 
 	    // Verify save method is called
-	    verify(assignmentRepository, times(1)).save(any());
+	    verify(assignmentRepository, times(1)).save(eq(assignment));
+	    //verify(assignmentRepository, times(1)).save(any());
 	}
 	@Test
 	public void deleteAssignmentWithNullAssignmentGrade() throws Exception {
@@ -385,6 +398,13 @@ public class JunitTestGradebook {
 
 	    mvc.perform(delete("/course/{courseId}/assignment/{assignmentId}", TEST_COURSE_ID, 1))
 	        .andExpect(status().isOk());
+	    
+	    
+	    verify(assignmentRepository, times(1)).delete(assignment);
+	
+	    assertFalse(course.getAssignments().contains(assignment));
+	    
+	   
 	}
 	
 	

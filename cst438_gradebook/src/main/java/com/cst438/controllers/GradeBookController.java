@@ -178,38 +178,7 @@ public class GradeBookController {
 		
 		return assignment;
 	}
-//	@DeleteMapping("/course/{courseId}/assignment/{assignmentId}")
-//    public void deleteAssignment(@PathVariable int courseId, @PathVariable int assignmentId) {
-//        // Get the assignment by ID
-//        Assignment assignment = assignmentRepository.findById(assignmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
-//
-//        // Check if there are any grades for the assignment
-//        List<AssignmentGrade> grades = assignmentGradeRepository.findByAssignment(assignment);
-//        if (grades.isEmpty()) {
-//            // If there are no grades, delete the assignment
-//            assignmentRepository.delete(assignment);
-//        } else {
-//            // If there are grades, throw an exception
-//            throw new IllegalStateException("Cannot delete assignment because there are grades for it");
-//        }
-//    }
-	
-//	@PostMapping("/course/{courseId}/assignment")
-//	@Transactional
-//	public Assignment addAssignment(@PathVariable int courseId, @RequestBody Assignment assignment) {
-//	    // Set the course ID for the assignment
-//		Course course = courseRepository.findById(courseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
-//		
-//		
-//		// Set the course for the assignment
-//	    assignment.setCourse(course);
-//
-//	    // Save the new Assignment to the database
-//	    Assignment savedAssignment = assignmentRepository.save(assignment);
-//
-//
-//	    return savedAssignment;
-//	}
+
 	@PostMapping("/course/{courseId}/assignment")
 	@Transactional
 	public Assignment addAssignment(@PathVariable int courseId, @RequestBody Assignment assignment) {
@@ -249,6 +218,15 @@ public class GradeBookController {
 	    } else {
 	        // If none of the assignment grades have a non-null score, delete the assignment
 	        assignmentRepository.delete(assignment);
+
+	        // Remove the assignment from the course's list of assignments
+	        Course course = assignment.getCourse();
+	        if (course != null) {
+	            List<Assignment> assignments = course.getAssignments();
+	            if (assignments != null) {
+	                assignments.removeIf(a -> a.getId() == assignment.getId());
+	            }
+	        }
 	    }
 	}
 	@PutMapping("/course/{courseId}/assignment/{assignmentId}")
