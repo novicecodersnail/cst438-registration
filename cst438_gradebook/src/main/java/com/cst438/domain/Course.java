@@ -2,6 +2,7 @@ package com.cst438.domain;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -21,7 +22,7 @@ public class Course {
 	@OrderBy("studentName ASC")
 	List<Enrollment> enrollments;
 	
-	@OneToMany(mappedBy="course")
+	@OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
 	List<Assignment> assignments;
 	
 	public int getCourse_id() {

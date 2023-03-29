@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface AssignmentRepository extends CrudRepository <Assignment, Integer> {
 
-	@Query("select a from Assignment a where a.needsGrading=1 and a.dueDate < current_date and a.course.instructor= :email order by a.id")
+	@Query("select a from Assignment a where a.needsGrading=0 and a.dueDate < current_date and a.course.instructor= :email order by a.id")
 	List<Assignment> findNeedGradingByEmail(@Param("email") String email);
 	
 	
