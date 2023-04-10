@@ -10,5 +10,7 @@ public interface EnrollmentRepository extends CrudRepository <Enrollment, Intege
 	//Optional<Enrollment> findByStudentIdAndCourseId(int studentId, int courseId);
 	
 	 List<Enrollment> findByCourse(Course course);
+	 
+	 List<Enrollment> findCourseById(int course_id);
 
 }

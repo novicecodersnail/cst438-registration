@@ -31,9 +31,17 @@ public class EnrollmentController {
 	@Transactional
 	public EnrollmentDTO addEnrollment(@RequestBody EnrollmentDTO enrollmentDTO) {
 		
-		//TODO  complete this method in homework 4
+		Enrollment enrollment= new Enrollment();
+		enrollment.setStudentName(enrollmentDTO.studentName);
+		enrollment.setStudentEmail(enrollmentDTO.studentEmail);
+		Course course= courseRepository.findById(enrollmentDTO.course_id)
+		        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CourseW not found"));
 		
-		return null;
+		enrollment.setCourse(course);
+		
+		enrollment=enrollmentRepository.save(enrollment);
+		enrollmentDTO.id=enrollment.getId();
+		return enrollmentDTO;
 		
 	}
 
